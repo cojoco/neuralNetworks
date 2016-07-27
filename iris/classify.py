@@ -45,33 +45,49 @@ def err(x, y):
     return 1
 
 
+def listErr(x, y):
+    """Returns 1 if the biggest number in x does not match the 1 in y"""
+    if x.index(max(x)) != y.index(1):
+        return 1
+    return 0
+
+
+def npArrErr(x, y):
+    """Returns a numpy array with 1 in the row for error, 0 otherwise"""
+    argmaxArr = np.argmax(x, axis=1) - np.argmax(y, axis=1)
+    newArr = np.zeros((150, 1))
+    for i in range(argmaxArr.shape[0]):
+        if argmaxArr[i] == 0:
+            newArr[i,0] = 0
+        else:
+            newArr[i,0] = 1
+    return newArr
+
+
 def rmse(x, y):
     """Returns the root mean squared error of the two lists"""
     return np.sqrt(((x - y) ** 2).mean())
 
 
-# Input
+# Input, including bias
 X = np.array([[float(d['sepLength']), float(d['sepWidth']),
-               float(d['petLength']), float(d['petWidth'])] for d in data])
+               float(d['petLength']), float(d['petWidth']), 1] for d in data])
 
-preY = []
-for d in data:
+y = np.zeros((len(data), 3))
+for i, d in enumerate(data):
     if d['type'].strip() == 'Iris-setosa':
-        preY.append(-.5)
+        y[i] = [1, 0, 0]
     elif d['type'].strip() == 'Iris-versicolor':
-        preY.append(0)
+        y[i] = [0, 1, 0]
     elif d['type'].strip() == 'Iris-virginica':
-        preY.append(0.5)
+        y[i] = [0, 0, 1]
     else:
         raise Exception('Invalid iris type')
 
-# Expected output
-y = np.array([preY]).T
-
 # Get some random weights from -1 to 1
-syn0 = 2 * np.random.random((4,16)) - 1
+syn0 = 2 * np.random.random((5,16)) - 1
 syn1 = 2 * np.random.random((16,16)) - 1
-syn2 = 2 * np.random.random((16,1)) - 1
+syn2 = 2 * np.random.random((16,3)) - 1
 
 for _ in range(5000):
 
@@ -85,7 +101,7 @@ for _ in range(5000):
     l3 = sigmoid(np.dot(l2, syn2))
 
     # Backward propagation
-    l3_error = np.array([[err(l3_i, y_i)] for l3_i, y_i in zip(l3, y)])
+    l3_error = npArrErr(l3, y)
 
     if (_ % 1000) == 0:
         print("error is", str(np.mean(np.abs(l3_error))))
@@ -106,4 +122,4 @@ for _ in range(5000):
     syn2 += l2.T.dot(l3_delta)
 
 print("Output")
-print(l2)
+print(l3)
