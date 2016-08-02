@@ -98,7 +98,7 @@ for _ in range(5000):
 
     l2 = sigmoid(np.dot(l1, syn1))
 
-    l3 = sigmoid(np.dot(l2, syn2))
+    l3 = softmax(np.dot(l2, syn2))
 
     # Backward propagation
     l3_error = npArrErr(l3, y)
@@ -106,7 +106,7 @@ for _ in range(5000):
     if (_ % 1000) == 0:
         print("error is", str(np.mean(np.abs(l3_error))))
 
-    l3_delta = l3_error * sigDeriv(l3)
+    l3_delta = l3_error * softDeriv(l3)
 
     l2_error = l3_delta.dot(syn2.T)
 
